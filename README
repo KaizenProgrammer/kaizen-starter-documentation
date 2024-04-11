@@ -1,0 +1,133 @@
+
+# WSL Setup
+
+For consistency in deployment and development both for ALL environments we'll use Windows Subsystem for Linux. 
+
+This allows for developers to have consistent development experiences in all applications.
+## Install Windows Terminal
+Windows Terminal is a more advanced command prompt. It allows multiple shells. Windows Terminal comes with Windows 11. But if you do not see it, you can install it via the Microsoft Store.
+
+## Install WS Ubuntu
+
+Using Windows Terminal (as Administrator) run the following code:
+
+```terminal
+wsl --list --online
+wsl --install -d Ubuntu
+```
+
+**<span style="color:red">You may need to restart your PC for install to complete.</span>**
+
+Once install is compete it will ask you for a UNIX username. To make it easy to remember, use first initial and last name.
+
+Then enter a password that you will remember for this user. It will be a super user for the Linux environment (which is completely sepsarate from the Windows system)
+
+Check the version is WSL version 2
+
+```terminal 
+wsl -l -v
+```
+
+It should look like:
+
+```terminal
+NAME      STATE           VERSION
+* Ubuntu  Stopped         2
+``` 
+
+
+If it says version 1, then you need to ensure Windows is full upgraded to the latest version, then force a WSL upgrade of Ubuntu like so
+
+```terminal
+wsl --set-version Ubuntu 2
+```
+
+### Set Ubuntu as the default  profile.
+With the Windows Terminal open, go to settings (Ctrl + ,)
+
+Set the default profile to Ubuntu
+
+![alt text](image.png)
+
+**<span style="color:red">Remember to always open Windows Terminal as an Administator</span>**
+
+### Update and Upgrade all Installed Applications
+
+```terminal
+sudo apt update
+sudo apt upgrade
+sudo apt autoremove
+```
+
+## Instal Git
+In the Windows Terminal (Ubuntu), install git
+
+```terminal
+sudo apt install git
+```
+
+Configure git with your user name and email.
+```terminal
+git config --global user.name "First Last"
+git config --global user.email "email@domain.com"
+git config --global credential.helper cache
+git config --global push.default simple
+```
+
+### Connect to GitHub with SSH
+
+Using [documentation from GitHub](https://docs.github.com/en/authentication/connecting-to-github-with-ssh), we'll connect with SSH.
+
+First, check for existing SSH keys.
+
+```terminal
+ ls -al ~/.ssh
+# Lists the files in your .ssh directory, if they exist
+```
+On initial setup, this folder will not exist.
+
+Setup a new SSH Key using your email. Be sure to use one of the emails listed on GitHub: https://github.com/settings/emails
+
+```terminal
+ssh-keygen -t ed25519 -C "your_email@example.com"
+```
+Use the default location to save the file. This will create the `.ssh` folder.
+
+Use a passphrase that you can remember to secure your SSH Key.
+
+#### Add your SSH key to the ssh-agent.
+
+Start the ssh-agent in the background.
+```terminal
+eval "$(ssh-agent -s)"
+```
+
+Add the private key you just created to the ssh-agent. By default the name should be `id_ed25519` if your key is different adjust accordingly.
+```terminal
+ssh-add ~/.ssh/id_ed25519
+```
+
+#### Add your new SSH key to your GitHub account
+
+Follow the instructions here to add your SSH key to GitHub: https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account
+
+#### Test your SSH Connection
+
+```terminal
+ssh -T git@github.com
+```
+
+You may see a warning like this:
+```terminal
+> The authenticity of host 'github.com (IP ADDRESS)' can't be established.
+> ED25519 key fingerprint is SHA256:+DiY3wvvV6TuJJhbpZisF/zLDA0zPMSvHdkr4UvCOqU.
+> Are you sure you want to continue connecting (yes/no)?
+```
+
+Verify that the fingerprint in the message you see matches [GitHub's public key fingerprint](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/githubs-ssh-key-fingerprints). If it does, then type yes:
+
+A successfult check looks like:
+
+```terminal
+Hi Username! You've successfully authenticated, but GitHub does not provide shell access.
+```
